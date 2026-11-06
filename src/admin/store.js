@@ -29,6 +29,7 @@ const LOCKOUT_DURATION = 15 * 60 * 1000
 const TOKEN_TTL = 7 * 24 * 60 * 60 * 1000
 
 const generateSecret = () => {
+    if (!nodeCrypto) return null
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
     let secret = ''
     const bytes = nodeCrypto.randomBytes(20)
@@ -116,6 +117,13 @@ class DataStore {
             }
         }
         
+        // Cloudflare Workers / Vercel 等无文件系统运行时不初始化本地用户数据：
+        // 管理后台在这些环境不可用（见 README），且 hashPassword 依赖的 nodeCrypto 未定义
+        if (runtime !== 'node') {
+            this.initialized = true
+            return
+        }
+
         if (this.users.size === 0) {
             this.users.set('admin', {
                 username: 'admin',
@@ -130,6 +138,7 @@ class DataStore {
     }
 
     hashPassword(password, salt = null) {
+        if (!nodeCrypto) return null
         if (!salt) {
             salt = nodeCrypto.randomBytes(16).toString('hex')
         }

@@ -1,0 +1,11 @@
+# Cloudflare Workers 部署配置
+# 构建产物由 `npm run build:all` 生成（esbuild 预打包，不依赖 Wrangler 框架自动探测）
+name = "meting-api"
+main = "dist/cloudflare-workers-min.js"
+compatibility_date = "2025-04-01"
+workers_dev = true
+
+# 说明：
+# - OVERSEAS 无需手动配置，src/config.js 在检测到 cloudflare/vercel 运行时自动置为 true
+# - 管理后台依赖文件系统，在 Workers 下不可用，仅提供 /api、/test、/ 等基础接口
+# - 不要加 nodejs_compat：bundle 已内置 process/buffer/crypto polyfill，额外开启易引发全局绑定冲突
